@@ -1538,7 +1538,7 @@ int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
 {
     int64_t nSubsidy = 20;
 
-    if(nHeight == 1)
+    if(nHeight == 0)
     {
         nSubsidy = 10000000;
     }
