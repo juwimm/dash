@@ -1536,51 +1536,22 @@ double ConvertBitsToDouble(unsigned int nBits)
 
 int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
 {
-    double dDiff = (double)0x0000ffff / (double)(nBits & 0x00ffffff);
+    int64_t nSubsidy = 20;
 
-    /* fixed bug caused diff to not be correctly calculated */
-    if(nHeight > 4500 || Params().NetworkID() != CBaseChainParams::MAIN) dDiff = ConvertBitsToDouble(nBits);
-
-    int64_t nSubsidy = 0;
-    if(nHeight >= 5465) {
-        if((nHeight >= 17000 && dDiff > 75) || nHeight >= 24000) { // GPU/ASIC difficulty calc
-            // 2222222/(((x+2600)/9)^2)
-            nSubsidy = (2222222.0 / (pow((dDiff+2600.0)/9.0,2.0)));
-            if (nSubsidy > 25) nSubsidy = 25;
-            if (nSubsidy < 5) nSubsidy = 5;
-        } else { // CPU mining calc
-            nSubsidy = (11111.0 / (pow((dDiff+51.0)/6.0,2.0)));
-            if (nSubsidy > 500) nSubsidy = 500;
-            if (nSubsidy < 25) nSubsidy = 25;
-        }
-    } else {
-        nSubsidy = (1111.0 / (pow((dDiff+1.0),2.0)));
-        if (nSubsidy > 500) nSubsidy = 500;
-        if (nSubsidy < 1) nSubsidy = 1;
+    if(nHeight == 1)
+    {
+        nSubsidy = 10000000;
     }
 
-    // LogPrintf("height %u diff %4.2f reward %i \n", nHeight, dDiff, nSubsidy);
     nSubsidy *= COIN;
 
     if(Params().NetworkID() == CBaseChainParams::TESTNET){
-        for(int i = 46200; i <= nHeight; i += 210240) nSubsidy -= nSubsidy/14;
+        for(int i = 2005; i <= nHeight; i += 2005) nSubsidy -= nSubsidy/14;
     } else {
-        // yearly decline of production by 7.1% per year, projected 21.3M coins max by year 2050.
-        for(int i = 210240; i <= nHeight; i += 210240) nSubsidy -= nSubsidy/14;
+        // yearly decline of production by 7.1% per year, projected 70M coins max by year 2050.
+        for(int i = 200500; i <= nHeight; i += 200500) nSubsidy -= nSubsidy/14;
     }
 
-    /*
-        
-        Hard fork will activate on block 328008, reducing the block reward by 10 extra percent (allowing budget super-blocks)
-    
-    */
-
-    if(Params().NetworkID() == CBaseChainParams::TESTNET){
-        if(nHeight > 77900+576) nSubsidy -= nSubsidy/10;
-    } else {
-        if(nHeight > 309759+(553*33)) nSubsidy -= nSubsidy/10; // 328008 - 10.0% - September 6, 2015
-    }
-    
     return nSubsidy + nFees;
 }
 
